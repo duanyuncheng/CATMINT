@@ -1,0 +1,115 @@
+# library
+```{r}
+library(tidyverse)
+```
+
+# load files (v3_pr)
+```{r}
+ensembl_sim_obs_for_LRT_gnomad4_exome_5_classes_all_chrm <- read_delim("D:/projects/RVIS/LRT/chr_by_chr_gnomad4_exome_20240516/ensembl.sim_obs_for_LRT.w_missense_damaging.w_null.gnomad4_exome.all_chrm.txt", 
+    delim = "\t", escape_double = FALSE, 
+    trim_ws = TRUE)
+colnames(ensembl_sim_obs_for_LRT_gnomad4_exome_5_classes_all_chrm)
+```
+
+```{r}
+hg38_ensembl_110_gene_name_trans_version_name <- read_delim("D:/projects/RVIS/LRT/chr_by_chr_gnomad4_exome/Homo_sapiens.GRCh38.110.cds_and_stop_codon.ccds.no_cds_end_or_start_NF.no_pseudogene.gene_name_trans_version_transname.txt", 
+    delim = "\t", escape_double = FALSE, col_names = FALSE,
+    trim_ws = TRUE)
+colnames(hg38_ensembl_110_gene_name_trans_version_name) <- c("gene_name","trans:vs","transname")
+head(hg38_ensembl_110_gene_name_trans_version_name)
+```
+
+
+```{r}
+hg38_ensembl_111_canonical <- read_delim("D:/projects/RVIS/LRT/chr_by_chr_gnomad4_exome/mart_export_canonical_autosomal_protein_coding.hg38.ensembl_111.txt", 
+    delim = "\t", escape_double = FALSE, col_names = TRUE,
+    trim_ws = TRUE)
+colnames(hg38_ensembl_111_canonical)
+```
+
+# prepare for observation 
+```{r}
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes <- ensembl_sim_obs_for_LRT_gnomad4_exome_5_classes_all_chrm
+
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_non_functional <- ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_all - ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_nonsyn -  ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_OP
+
+
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_missense <- ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_nonsyn - ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_lof
+
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_no_probably_damaging_missense <- ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_missense - ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_missense_probably_damaging
+```
+
+# prepare for expectation
+```{r}
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_non_functional <- ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_all - ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_nonsyn - ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_OP
+
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_missense <- ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_nonsyn - ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_lof
+
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_no_probably_damaging_missense <- ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_missense - ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_missense_probably_damaging
+```
+
+
+# create ratio columns
+```{r}
+#expectation
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sim_non_functional_to_all <- ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_non_functional/ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_all
+
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sim_OP_to_all <- ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_OP/ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_all
+
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sim_no_probably_damaging_to_all <- ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_no_probably_damaging_missense/ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_all
+
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sim_missense_probably_damaging_to_all <- ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_missense_probably_damaging/ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_all
+
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sim_lof_to_all <- ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_lof/ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sum_pr_all
+
+#observation
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$obs_non_functional_to_all <-  ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_non_functional/ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_all
+
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$obs_OP_to_all <- ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_OP/ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_all
+
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$obs_no_probably_damaging_to_all <- ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_no_probably_damaging_missense/ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_all
+
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$obs_missense_probably_damaging_to_all <-
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_missense_probably_damaging/ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_all
+
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$obs_lof_to_all <-
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_lof/ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_all
+```
+
+# LRT
+```{r}
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$loglikelihood_alt <- 0
+for (i in 1:nrow(ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes))
+{
+  ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$loglikelihood_alt[i] <- dmultinom(x = c(ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_non_functional[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_OP[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_no_probably_damaging_missense[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_missense_probably_damaging[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_lof[i]),prob = c(ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$obs_non_functional_to_all[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$obs_OP_to_all[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$obs_no_probably_damaging_to_all[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$obs_missense_probably_damaging_to_all[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$obs_lof_to_all[i]), log = TRUE)
+}
+```
+
+```{r}
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$loglikelihood_null <- 0
+for (i in 1:nrow(ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes))
+{
+  ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$loglikelihood_null[i] <- dmultinom(x = c(ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_non_functional[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_OP[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_no_probably_damaging_missense[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_missense_probably_damaging[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$num_lof[i]),prob = c(max(0,ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sim_non_functional_to_all[i]), ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sim_OP_to_all[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sim_no_probably_damaging_to_all[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sim_missense_probably_damaging_to_all[i], ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$sim_lof_to_all[i]), log = TRUE)
+}
+```
+
+
+
+## LRT between observation and expectation
+```{r}
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$LRT <- -2*(ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$loglikelihood_null - ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$loglikelihood_alt)
+```
+
+
+```{r}
+getpvalue <- function(a,b){pchisq(a, df=b, lower.tail=FALSE, log.p = FALSE)}
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$pvalue <- mapply(getpvalue, ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes$LRT, 4)
+```
+
+# add gene name
+```{r}
+ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes <- left_join(ensembl_sim_obs_for_multinonmial_gnomad4_exome_5_classes, hg38_ensembl_110_gene_name_trans_version_name, by = c("trans:vs"="trans:vs"))
+```
+
+
+
