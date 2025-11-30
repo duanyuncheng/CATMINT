@@ -53,22 +53,24 @@ KL_result <- calculate_KL_divergence(P, Q)
 print(KL_result)
 ```
 
+
 # simulation examples
-## example 1 VAMP3 n_variant = 98                                                                                                  
+## example 1 VAMP3 n_variant = 328 (v4)                                                                                                 
 ```{r}
 set.seed(1234)
 i <- 4
-n_sample <- sum(file_for_logit_fullset2_poisson[i,2:6]) 
-p_null <- unlist(file_for_logit_fullset2_poisson[i,7:11])
+n_sample <- sum(gnomad4_exome_5_classes_file_for_logit_fullset[i,2:6]) 
+p_null <- unlist(gnomad4_exome_5_classes_file_for_logit_fullset[i,7:11])
 alpha <- 0.05
 n_simulation <- 1000
 
 power_result <- c()
 KL_divergence_result <- c()
 index <- 1
-for (random_index in sample(1:nrow(file_for_logit_fullset2_poisson), 100, replace = FALSE))
+for (random_index in sample(1:nrow(gnomad4_exome_5_classes_file_for_logit_fullset), 100, replace = FALSE))
 {
-  p_alt <- unlist(file_for_logit_fullset2_poisson[random_index,12:16])
+  #print (index)
+  p_alt <- unlist(gnomad4_exome_5_classes_file_for_logit_fullset[random_index,12:16])
   KL_result <- calculate_KL_divergence(p_alt, p_null)
   
   simulated_data_matrix <- rmultinom(n_simulation, n_sample, p_alt)
@@ -90,6 +92,12 @@ for (random_index in sample(1:nrow(file_for_logit_fullset2_poisson), 100, replac
 }
 
 ```
+
+```{r}
+plot(x=KL_divergence_result, y=power_result)
+```
+
+
 
 
 
